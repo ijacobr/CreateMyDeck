@@ -1,4 +1,4 @@
-import "./css/Nopage.css";
+import "./css/styles.css";
 
 function Nopage() {
     return (
