@@ -14,7 +14,7 @@ import Layout from "./Layout";
 
 function App() {
     return (
-        <BrowserRouter basename="/createmydeck">
+        <BrowserRouter basename={process.env.PUBLIC_URL}>
             <Routes>
                 <Route path="/" element={<Layout />}>
                     {/* Redirect the root to /home */}
