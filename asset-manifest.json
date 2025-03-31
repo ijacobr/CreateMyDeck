@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/static/css/main.34896b0a.css",
-    "main.js": "/static/js/main.6ab43459.js",
-    "index.html": "/index.html",
-    "main.34896b0a.css.map": "/static/css/main.34896b0a.css.map",
-    "main.6ab43459.js.map": "/static/js/main.6ab43459.js.map"
+    "main.css": "/createmydeck/static/css/main.08d30b12.css",
+    "main.js": "/createmydeck/static/js/main.62822f67.js",
+    "index.html": "/createmydeck/index.html",
+    "main.08d30b12.css.map": "/createmydeck/static/css/main.08d30b12.css.map",
+    "main.62822f67.js.map": "/createmydeck/static/js/main.62822f67.js.map"
   },
   "entrypoints": [
-    "static/css/main.34896b0a.css",
-    "static/js/main.6ab43459.js"
+    "static/css/main.08d30b12.css",
+    "static/js/main.62822f67.js"
   ]
 }
