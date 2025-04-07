@@ -1,14 +1,10 @@
 import React, { useState } from "react";
-import "./css/styles.css"; // Adjust the path as needed
-import { Link } from "react-router-dom";
 
 const MyDecks = () => {
-    // State for deck list and form inputs
     const [decks, setDecks] = useState([]);
     const [deckName, setDeckName] = useState("");
     const [deckDescription, setDeckDescription] = useState("");
 
-    // Handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
         if (deckName.trim() && deckDescription.trim()) {
@@ -25,30 +21,6 @@ const MyDecks = () => {
 
     return (
         <>
-            <header>
-                <div id="top-main">
-                    <img
-                        id="main-img"
-                        src={
-                            process.env.PUBLIC_URL + "/projects/images/logo.PNG"
-                        }
-                        alt="CreateMyDeck Logo"
-                    />
-                    <h1 id="main-header">CreateMyDeck</h1>
-                    <button id="main-btn">Log In</button>
-                    <div id="hamburger" className="hamburger">
-                        &#9776;
-                    </div>
-                </div>
-                <nav id="main-nav">
-                    <Link to="/home">Home</Link>
-                    <Link to="/MyDecks">My Decks</Link>
-                    <Link to="/Browse">Browse Cards</Link>
-                    <Link to="/Analysis">Deck Analysis</Link>
-                    <Link to="/About">About Us</Link>
-                </nav>
-            </header>
-
             <main>
                 <h2>My Decks</h2>
                 <p>
@@ -57,7 +29,6 @@ const MyDecks = () => {
                     in your browser.
                 </p>
 
-                {/* Form to add/edit decks */}
                 <section id="deck-form">
                     <form id="deckForm" onSubmit={handleSubmit}>
                         <label htmlFor="deckName">Deck Name:</label>
@@ -86,7 +57,6 @@ const MyDecks = () => {
                     </form>
                 </section>
 
-                {/* List of decks */}
                 <section id="deck-list">
                     <h3>Your Decks</h3>
                     <ul id="deck-ul">

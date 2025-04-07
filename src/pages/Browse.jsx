@@ -1,34 +1,19 @@
-import React from "react";
-import "./css/styles.css"; // Adjust the path as needed
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 
 const BrowseCards = () => {
+    const [cards, setCards] = useState([]);
+    // Use the REACT_APP_API_URL environment variable or default to localhost
+    const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+
+    useEffect(() => {
+        fetch(`${API_URL}/api/cards`)
+            .then((response) => response.json())
+            .then((data) => setCards(data))
+            .catch((err) => console.error("Error fetching cards:", err));
+    }, [API_URL]);
+
     return (
         <>
-            <header>
-                <div id="top-main">
-                    <img
-                        id="main-img"
-                        src={
-                            process.env.PUBLIC_URL + "/projects/images/logo.PNG"
-                        }
-                        alt="CreateMyDeck Logo"
-                    />
-                    <h1 id="main-header">CreateMyDeck</h1>
-                    <button id="main-btn">Log In</button>
-                    <div id="hamburger" className="hamburger">
-                        &#9776;
-                    </div>
-                </div>
-                <nav id="main-nav">
-                    <Link to="/home">Home</Link>
-                    <Link to="/MyDecks">My Decks</Link>
-                    <Link to="/Browse">Browse Cards</Link>
-                    <Link to="/Analysis">Deck Analysis</Link>
-                    <Link to="/About">About Us</Link>
-                </nav>
-            </header>
-
             <main>
                 <h2>Browse Cards</h2>
                 <p>
@@ -38,16 +23,14 @@ const BrowseCards = () => {
                     Then click "Add" to place a card into your chosen deck.
                 </p>
 
-                {/* Deck selection dropdown */}
                 <section id="deck-dropdown">
                     <label htmlFor="deckSelect">Add cards to:</label>
                     <select id="deckSelect">
                         <option value="">-- Select a deck --</option>
-                        {/* Options will be populated dynamically */}
+                        {/* Options can be populated dynamically */}
                     </select>
                 </section>
 
-                {/* Sorting Section */}
                 <section id="card-sort">
                     <button className="sort-button" data-sort="cost">
                         Sort by Cost
@@ -60,9 +43,27 @@ const BrowseCards = () => {
                     </button>
                 </section>
 
-                {/* Card Gallery (grid layout) */}
                 <section id="card-gallery" className="grid">
-                    {/* Cards will be loaded dynamically */}
+                    {cards.map((card) => (
+                        <div key={card.id} className="card">
+                            <img
+                                src={process.env.PUBLIC_URL + "/" + card.img}
+                                alt={card.name}
+                            />
+                            <h3>{card.name}</h3>
+                            <p>
+                                <strong>Cost:</strong> {card.cost}
+                            </p>
+                            <p>
+                                <strong>Attack:</strong> {card.attack}
+                            </p>
+                            <p>
+                                <strong>Health:</strong> {card.health}
+                            </p>
+                            <p>{card.text}</p>
+                            <button>Add</button>
+                        </div>
+                    ))}
                 </section>
             </main>
         </>
