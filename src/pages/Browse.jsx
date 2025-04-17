@@ -1,34 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL =
+  process.env.NODE_ENV === "development"
+    ? process.env.REACT_APP_API_URL || "http://localhost:3001"
+    : "https://createmydeck-server.onrender.com";
 
 const Browse = () => {
   const [cards, setCards] = useState([]);
   const [decks, setDecks] = useState([]);
   const [selectedDeckId, setSelectedDeckId] = useState("");
 
-  // fetch all cards
   useEffect(() => {
     fetch(`${API_URL}/api/cards`)
       .then((res) => res.json())
       .then(setCards)
       .catch((err) => console.error("Error fetching cards:", err));
-  }, []);
-
-  // fetch user's decks
-  useEffect(() => {
     fetch(`${API_URL}/api/decks`)
       .then((res) => res.json())
       .then(setDecks)
       .catch((err) => console.error("Error fetching decks:", err));
   }, []);
 
-  const sortBy = (metric) => {
-    const sorted = [...cards].sort(
-      (a, b) => parseInt(b[metric], 10) - parseInt(a[metric], 10)
+  const sortBy = (field) => {
+    setCards((prev) =>
+      [...prev].sort(
+        (a, b) => parseInt(b[field], 10) - parseInt(a[field], 10)
+      )
     );
-    setCards(sorted);
   };
 
   const handleAdd = async (card) => {
@@ -54,25 +53,21 @@ const Browse = () => {
   };
 
   return (
-    <main style={{ maxWidth: "800px", margin: "auto", padding: "20px" }}>
+    <main style={{ maxWidth: 800, margin: "auto", padding: 20 }}>
       <h2>Browse Cards</h2>
 
       <section
         style={{
           border: "1px solid #26AEE7",
-          borderRadius: "8px",
-          padding: "20px",
-          marginBottom: "30px",
+          borderRadius: 8,
+          padding: 20,
+          marginBottom: 30,
           backgroundColor: "#2C2A27",
         }}
       >
         <label
           htmlFor="deckSelect"
-          style={{
-            color: "#FFD700",
-            display: "block",
-            marginBottom: "10px",
-          }}
+          style={{ color: "#FFD700", marginBottom: 10, display: "block" }}
         >
           Add cards to:
         </label>
@@ -82,10 +77,10 @@ const Browse = () => {
           onChange={(e) => setSelectedDeckId(e.target.value)}
           style={{
             width: "100%",
-            padding: "8px",
-            borderRadius: "4px",
+            padding: 8,
+            borderRadius: 4,
             border: "1px solid #26AEE7",
-            marginBottom: "20px",
+            marginBottom: 20,
           }}
         >
           <option value="">-- Select a deck --</option>
@@ -95,24 +90,23 @@ const Browse = () => {
             </option>
           ))}
         </select>
-
-        <div
-          style={{
-            display: "flex",
-            gap: "10px",
-            justifyContent: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <button onClick={() => sortBy("cost")} className="sort-button">
-            Sort by Cost
-          </button>
-          <button onClick={() => sortBy("attack")} className="sort-button">
-            Sort by Attack
-          </button>
-          <button onClick={() => sortBy("health")} className="sort-button">
-            Sort by Health
-          </button>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          {["cost", "attack", "health"].map((m) => (
+            <button
+              key={m}
+              onClick={() => sortBy(m)}
+              className="sort-button"
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "transparent",
+                border: "1px solid #FFD700",
+                color: "#FFD700",
+                cursor: "pointer",
+              }}
+            >
+              Sort by {m.charAt(0).toUpperCase() + m.slice(1)}
+            </button>
+          ))}
         </div>
       </section>
 
@@ -122,8 +116,8 @@ const Browse = () => {
             key={card.id}
             style={{
               border: "1px solid #26AEE7",
-              borderRadius: "8px",
-              padding: "10px",
+              borderRadius: 8,
+              padding: 10,
               backgroundColor: "#2C2A27",
               textAlign: "center",
             }}
@@ -135,7 +129,7 @@ const Browse = () => {
                 style={{
                   display: "block",
                   maxWidth: "100%",
-                  maxHeight: "200px",
+                  maxHeight: 200,
                   objectFit: "contain",
                   margin: "auto",
                 }}
@@ -144,12 +138,12 @@ const Browse = () => {
             <button
               onClick={() => handleAdd(card)}
               style={{
-                marginTop: "10px",
+                marginTop: 10,
                 padding: "8px 16px",
                 backgroundColor: "#26AEE7",
                 color: "#fff",
                 border: "none",
-                borderRadius: "4px",
+                borderRadius: 4,
                 cursor: "pointer",
               }}
             >
