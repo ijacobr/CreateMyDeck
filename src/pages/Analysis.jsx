@@ -1,5 +1,3 @@
-// src/pages/Analysis.jsx
-
 import React, { useEffect, useState } from "react";
 
 const DeckAnalysis = () => {
@@ -8,12 +6,11 @@ const DeckAnalysis = () => {
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState("");
 
-  // Always default to your Render URL if the env var isn't set
+  // point at your Render server
   const API_URL =
     process.env.REACT_APP_API_URL ||
     "https://createmydeck-server.onrender.com";
 
-  // Fetch decks once on mount
   useEffect(() => {
     setError("");
     fetch(`${API_URL}/api/decks`)
@@ -25,24 +22,17 @@ const DeckAnalysis = () => {
       .catch((err) => setError(err.message));
   }, [API_URL]);
 
-  // Find the deck object whenever selection changes
   const selectedDeck = decks.find((d) => d.id === selectedDeckId);
 
   const analyze = () => {
     setError("");
     setAnalysis(null);
-
-    if (!selectedDeck) {
-      setError("Please select a deck first.");
-      return;
-    }
+    if (!selectedDeck) return setError("Please select a deck first.");
     const cards = selectedDeck.cards || [];
     if (cards.length === 0) {
-      setAnalysis({ message: "This deck has no cards yet.", points: [] });
-      return;
+      return setAnalysis({ message: "This deck has no cards yet.", points: [] });
     }
 
-    // Compute averages
     let totalCost = 0,
       totalAttack = 0,
       totalHealth = 0;
@@ -55,64 +45,39 @@ const DeckAnalysis = () => {
     const avgAttack = totalAttack / cards.length;
     const avgHealth = totalHealth / cards.length;
 
-    // Build insight points
     const points = [];
-    if (avgCost < 4) {
-      points.push(
-        "Very low average cost – excellent early game but may fizzle out late."
-      );
-    } else if (avgCost < 7) {
-      points.push(
-        "Moderate curve – balanced early and late game presence."
-      );
-    } else {
-      points.push(
-        "High cost curve – strong late drops but vulnerable to rush decks."
-      );
-    }
+    // Curve insights
+    if (avgCost < 4)
+      points.push("Very low curve—lightning starts but may run dry late.");
+    else if (avgCost < 7)
+      points.push("Moderate curve—flexible early and late.");
+    else
+      points.push("Heavy curve—game‑ender threat but shaky vs rush.");
 
-    if (avgAttack >= 7) {
-      points.push(
-        "High attack – strong trading power and potential burst damage."
-      );
-    } else if (avgAttack <= 3) {
-      points.push(
-        "Low attack – likely relies on spells or synergy rather than raw damage."
-      );
-    }
+    // Attack
+    if (avgAttack >= 7)
+      points.push("High average attack—strong trades & burst.");
+    else if (avgAttack <= 3)
+      points.push("Low average attack—may depend on spells or combos.");
 
-    if (avgHealth >= 7) {
-      points.push(
-        "High health – resilient minions that survive board clears."
-      );
-    } else if (avgHealth <= 3) {
-      points.push(
-        "Low health – fragile board that can be cleared by AoE."
-      );
-    }
+    // Health
+    if (avgHealth >= 7)
+      points.push("High average health—survives board clears.");
+    else if (avgHealth <= 3)
+      points.push("Low average health—fragile to AoE.");
 
+    // Skew
     const diff = avgAttack - avgHealth;
-    if (diff >= 3) {
-      points.push(
-        "Offensive skew: high damage minions but may lack staying power."
-      );
-    } else if (diff <= -3) {
-      points.push(
-        "Defensive skew: durable minions but may struggle to finish games."
-      );
-    }
+    if (diff >= 3)
+      points.push("Aggressive skew: damage over durability.");
+    else if (diff <= -3)
+      points.push("Defensive skew: durability over punch.");
 
-    // Combo insights
-    if (avgCost < 4 && avgAttack < 4 && avgHealth < 4) {
-      points.push(
-        "Hyper-aggressive: extremely fast, play two turns ahead but beware stabilizers."
-      );
-    }
-    if (avgCost > 7 && avgAttack < 5) {
-      points.push(
-        "Control-style: late-game value engines rather than minion aggression."
-      );
-    }
+    // Combined
+    if (avgCost < 4 && avgAttack < 4 && avgHealth < 4)
+      points.push("Hyper‑aggro: super fast, aim to finish early.");
+    if (avgCost > 7 && avgAttack < 5)
+      points.push("Control style: late‑game value over minion damage.");
 
     setAnalysis({
       avgCost: avgCost.toFixed(1),
@@ -126,8 +91,6 @@ const DeckAnalysis = () => {
   return (
     <main style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
       <h2>Deck Analysis</h2>
-      <p>Select a deck below and click “Analyze Deck” to see its metrics.</p>
-
       <section
         style={{
           border: "1px solid #26AEE7",
@@ -139,9 +102,9 @@ const DeckAnalysis = () => {
       >
         <label
           htmlFor="analysisDeckSelect"
-          style={{ color: "#FFD700", marginBottom: 10, display: "block" }}
+          style={{ color: "#FFD700", display: "block", marginBottom: 10 }}
         >
-          Which deck?
+          Pick a deck:
         </label>
         <select
           id="analysisDeckSelect"
@@ -154,12 +117,12 @@ const DeckAnalysis = () => {
           style={{
             width: "100%",
             padding: 8,
-            marginBottom: 15,
             borderRadius: 4,
             border: "1px solid #26AEE7",
+            marginBottom: 15,
           }}
         >
-          <option value="">-- Select a deck --</option>
+          <option value="">-- Select --</option>
           {decks.map((d) => (
             <option key={d.id} value={d.id}>
               {d.name}
@@ -179,9 +142,7 @@ const DeckAnalysis = () => {
         >
           Analyze Deck
         </button>
-        {error && (
-          <p style={{ color: "#ff6b6b", marginTop: 10 }}>{error}</p>
-        )}
+        {error && <p style={{ color: "#ff6b6b" }}>{error}</p>}
       </section>
 
       {selectedDeck && (
@@ -194,11 +155,11 @@ const DeckAnalysis = () => {
             backgroundColor: "#2C2A27",
           }}
         >
-          <h3 style={{ color: "#FFD700", marginBottom: 10 }}>
+          <h3 style={{ color: "#FFD700" }}>
             Cards in “{selectedDeck.name}”
           </h3>
           {selectedDeck.cards.length === 0 ? (
-            <p>No cards in this deck.</p>
+            <p>No cards.</p>
           ) : (
             <ul style={{ listStyle: "none", padding: 0 }}>
               {selectedDeck.cards.map((c, i) => (
@@ -207,7 +168,8 @@ const DeckAnalysis = () => {
                   style={{
                     padding: "8px 0",
                     borderBottom:
-                      i < selectedDeck.cards.length - 1 && "1px solid #463C2D",
+                      i < selectedDeck.cards.length - 1 &&
+                      "1px solid #463C2D",
                   }}
                 >
                   {c.name}
@@ -228,9 +190,21 @@ const DeckAnalysis = () => {
               marginBottom: 30,
             }}
           >
-            {["mana", "attack", "health"].map((icon, i) => (
+            {[
+              { icon: "mana", label: "Avg Cost", value: analysis.avgCost },
+              {
+                icon: "attack",
+                label: "Avg Attack",
+                value: analysis.avgAttack,
+              },
+              {
+                icon: "health",
+                label: "Avg Health",
+                value: analysis.avgHealth,
+              },
+            ].map((m) => (
               <div
-                key={i}
+                key={m.icon}
                 style={{
                   border: "1px solid #26AEE7",
                   borderRadius: 8,
@@ -241,24 +215,12 @@ const DeckAnalysis = () => {
                 }}
               >
                 <img
-                  src={`${process.env.PUBLIC_URL}/projects/images/${icon}.png`}
-                  alt={`${icon} icon`}
+                  src={`${process.env.PUBLIC_URL}/projects/images/${m.icon}.png`}
+                  alt={m.label}
                   style={{ width: 40, height: 40, marginBottom: 10 }}
                 />
-                <h4 style={{ margin: "10px 0" }}>
-                  {icon === "mana"
-                    ? analysis.avgCost
-                    : icon === "attack"
-                    ? analysis.avgAttack
-                    : analysis.avgHealth}
-                </h4>
-                <p style={{ fontSize: "0.9rem" }}>
-                  {icon === "mana"
-                    ? "Avg Cost"
-                    : icon === "attack"
-                    ? "Avg Attack"
-                    : "Avg Health"}
-                </p>
+                <h4 style={{ margin: "10px 0" }}>{m.value}</h4>
+                <p style={{ fontSize: "0.85rem" }}>{m.label}</p>
               </div>
             ))}
           </section>
@@ -271,7 +233,7 @@ const DeckAnalysis = () => {
               backgroundColor: "#2C2A27",
             }}
           >
-            <h3 style={{ color: "#FFD700", marginBottom: 10 }}>Insights</h3>
+            <h3 style={{ color: "#FFD700" }}>Insights</h3>
             <ul style={{ paddingLeft: 20 }}>
               {analysis.points.map((pt, i) => (
                 <li key={i} style={{ marginBottom: 8 }}>
