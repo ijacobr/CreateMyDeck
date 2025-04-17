@@ -94,33 +94,15 @@ const Browse = () => {
           ))}
         </select>
 
-        {/* Updated sort button container */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "10px",
-            flexWrap: "wrap",
-            width: "100%",        // ensure full‑width so centering works
-            marginBottom: "10px", // some spacing below
-          }}
-        >
-          <button
-            onClick={() => sortBy("cost")}
-            className="sort-button"
-          >
+        {/* sort buttons wrapped in a flex container */}
+        <div className="sort-container">
+          <button onClick={() => sortBy("cost")} className="sort-button">
             Sort by Cost
           </button>
-          <button
-            onClick={() => sortBy("attack")}
-            className="sort-button"
-          >
+          <button onClick={() => sortBy("attack")} className="sort-button">
             Sort by Attack
           </button>
-          <button
-            onClick={() => sortBy("health")}
-            className="sort-button"
-          >
+          <button onClick={() => sortBy("health")} className="sort-button">
             Sort by Health
           </button>
         </div>
@@ -138,9 +120,7 @@ const Browse = () => {
               textAlign: "center",
             }}
           >
-            <Link
-              to={`/preview?card=${encodeURIComponent(card.name)}`}
-            >
+            <Link to={`/preview?card=${encodeURIComponent(card.name)}`}>
               <img
                 src={`${API_URL}/${card.img}`}
                 alt={card.name}
