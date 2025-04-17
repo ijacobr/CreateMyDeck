@@ -1,6 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  HashRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import "./styles.css";
 
 // Import pages and shared components
@@ -14,7 +19,7 @@ import CardPreview from "./pages/CardPreview";
 
 const Root = () => {
   return (
-    <Router basename="/CreateMyDeck">
+    <Router>
       {/* Shared Header appears on every page */}
       <Header />
       <Routes>
