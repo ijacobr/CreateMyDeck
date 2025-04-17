@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": false,
     "proxy": "http://localhost:3001",
-    "homepage": "https://ijacobr.github.io/createmydeck",
+    "homepage": "https://ijacobr.github.io/CreateMyDeck",
     "dependencies": {
         "@testing-library/dom": "^10.4.0",
         "@testing-library/jest-dom": "^6.6.3",
