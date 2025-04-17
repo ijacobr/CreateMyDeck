@@ -1,9 +1,8 @@
-// src/pages/MyDecks.jsx
 import React, { useState, useEffect } from "react";
 
-const MyDecks = () => {
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
+const API_URL = process.env.REACT_APP_API_URL;
 
+const MyDecks = () => {
   const [decks, setDecks] = useState([]);
   const [deckName, setDeckName] = useState("");
   const [deckDescription, setDeckDescription] = useState("");
@@ -14,43 +13,37 @@ const MyDecks = () => {
   // Load decks from server
   useEffect(() => {
     fetch(`${API_URL}/api/decks`)
-      .then((res) => {
+      .then(async (res) => {
         if (!res.ok) throw new Error(`Load error: ${res.status}`);
         return res.json();
       })
       .then(setDecks)
       .catch((err) => setErrorMsg(err.message));
-  }, [API_URL]);
+  }, []);
 
-  // Handle file input
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0] || null);
   };
 
-  // Create a new deck
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
-
     if (!deckName.trim() || !deckDescription.trim()) {
       setErrorMsg("Name and description are required.");
       return;
     }
-
     const formData = new FormData();
     formData.append("name", deckName.trim());
     formData.append("description", deckDescription.trim());
-    if (selectedFile) {
-      formData.append("image", selectedFile);
-    }
-
+    if (selectedFile) formData.append("image", selectedFile);
     try {
       const res = await fetch(`${API_URL}/api/decks`, {
         method: "POST",
         body: formData,
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data = JSON.parse(text);
       if (!data.success) throw new Error(data.message || "Server error");
       setDecks((prev) => [...prev, data.deck]);
       setDeckName("");
@@ -62,7 +55,6 @@ const MyDecks = () => {
     }
   };
 
-  // Delete a deck
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this deck?")) return;
     setErrorMsg("");
@@ -70,7 +62,8 @@ const MyDecks = () => {
       const res = await fetch(`${API_URL}/api/decks/${id}`, {
         method: "DELETE",
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data = JSON.parse(text);
       if (!data.success) throw new Error(data.message || "Delete failed");
       setDecks((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
@@ -81,7 +74,6 @@ const MyDecks = () => {
   return (
     <main style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
       <h2>My Decks</h2>
-
       <section
         style={{
           border: "1px solid #26AEE7",
