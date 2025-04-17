@@ -4,8 +4,11 @@ import { Link } from "react-router-dom";
 const Header = () => {
     const [isNavOpen, setIsNavOpen] = useState(false);
 
-    const toggleNav = () => {
-        setIsNavOpen(!isNavOpen);
+    const toggleNav = () => setIsNavOpen((open) => !open);
+
+    // Close mobile nav when a link is clicked
+    const handleLinkClick = () => {
+        if (isNavOpen) setIsNavOpen(false);
     };
 
     return (
@@ -18,20 +21,35 @@ const Header = () => {
                 />
                 <h1 id="main-header">CreateMyDeck</h1>
                 <button id="main-btn">Log In</button>
-                <div id="hamburger" className="hamburger" onClick={toggleNav}>
+                <button
+                    id="hamburger"
+                    className="hamburger"
+                    onClick={toggleNav}
+                    aria-label="Toggle navigation"
+                    aria-expanded={isNavOpen}
+                >
                     &#9776;
-                </div>
+                </button>
             </div>
+
             <nav id="main-nav" className={isNavOpen ? "open" : ""}>
-                <Link to="/home">Home</Link>
-                <Link to="/MyDecks">My Decks</Link>
-                <Link to="/Browse">Browse Cards</Link>
-                <Link to="/Analysis">Deck Analysis</Link>
-                <Link to="/About">About Us</Link>
-                <Link to="/contact">Contact</Link>
+                <Link to="/home" onClick={handleLinkClick}>
+                    Home
+                </Link>
+                <Link to="/MyDecks" onClick={handleLinkClick}>
+                    My Decks
+                </Link>
+                <Link to="/Browse" onClick={handleLinkClick}>
+                    Browse Cards
+                </Link>
+                <Link to="/Analysis" onClick={handleLinkClick}>
+                    Deck Analysis
+                </Link>
+                <Link to="/About" onClick={handleLinkClick}>
+                    About Us
+                </Link>
             </nav>
         </header>
     );
 };
-
 export default Header;

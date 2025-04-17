@@ -35,7 +35,11 @@ const Home = () => {
                             Click on a card to see detailed stats and art on a
                             dedicated preview page.
                         </p>
-                        <Link to="/preview" className="preview-link">
+                        {/* Passing a default query parameter so that a valid card appears */}
+                        <Link
+                            to="/preview?card=aldorpeacekeeper"
+                            className="preview-link"
+                        >
                             View Preview
                         </Link>
                     </div>
