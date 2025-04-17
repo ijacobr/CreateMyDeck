@@ -2,178 +2,148 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const Browse = () => {
-    const [cards, setCards] = useState([]);
-    const [decks, setDecks] = useState([]);
-    const [selectedDeckId, setSelectedDeckId] = useState("");
-    // this must point to your render.com URL in production
-    const API_URL = process.env.REACT_APP_API_URL || "";
+  const [cards, setCards] = useState([]);
+  const [decks, setDecks] = useState([]);
+  const [selectedDeckId, setSelectedDeckId] = useState("");
 
-    // fetch all cards
-    useEffect(() => {
-        fetch(`${API_URL}/api/cards`)
-            .then((res) => {
-                if (!res.ok) throw new Error("Failed to fetch cards");
-                return res.json();
-            })
-            .then(setCards)
-            .catch((err) => console.error("Error fetching cards:", err));
-    }, [API_URL]);
+  // <- default to your render.com URL in production
+  const API_URL =
+    process.env.REACT_APP_API_URL ||
+    "https://createmydeck-server.onrender.com";
 
-    // fetch user's decks
-    useEffect(() => {
-        fetch(`${API_URL}/api/decks`)
-            .then((res) => {
-                if (!res.ok) throw new Error("Failed to fetch decks");
-                return res.json();
-            })
-            .then(setDecks)
-            .catch((err) => console.error("Error fetching decks:", err));
-    }, [API_URL]);
+  useEffect(() => {
+    fetch(`${API_URL}/api/cards`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch cards");
+        return res.json();
+      })
+      .then(setCards)
+      .catch((err) => console.error(err));
+  }, [API_URL]);
 
-    // sort handler
-    const sortBy = (metric) => {
-        const sorted = [...cards].sort(
-            (a, b) => parseInt(b[metric], 10) - parseInt(a[metric], 10)
-        );
-        setCards(sorted);
-    };
+  useEffect(() => {
+    fetch(`${API_URL}/api/decks`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch decks");
+        return res.json();
+      })
+      .then(setDecks)
+      .catch((err) => console.error(err));
+  }, [API_URL]);
 
-    // add card to deck
-    const handleAdd = async (card) => {
-        if (!selectedDeckId) {
-            alert("Please select a deck first.");
-            return;
-        }
-        try {
-            const res = await fetch(
-                `${API_URL}/api/decks/${selectedDeckId}/cards`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(card),
-                }
-            );
-            const data = await res.json();
-            if (!data.success) throw new Error(data.message || "Server error");
-            alert(`${card.name} added to deck!`);
-        } catch (err) {
-            alert("Error adding card: " + err.message);
-        }
-    };
-
-    return (
-        <main style={{ maxWidth: "800px", margin: "auto", padding: "20px" }}>
-            <h2>Browse Cards</h2>
-
-            <section
-                style={{
-                    border: "1px solid #26AEE7",
-                    borderRadius: "8px",
-                    padding: "20px",
-                    marginBottom: "30px",
-                    backgroundColor: "#2C2A27",
-                }}
-            >
-                <label
-                    htmlFor="deckSelect"
-                    style={{
-                        color: "#FFD700",
-                        display: "block",
-                        marginBottom: "10px",
-                    }}
-                >
-                    Add cards to:
-                </label>
-                <select
-                    id="deckSelect"
-                    value={selectedDeckId}
-                    onChange={(e) => setSelectedDeckId(e.target.value)}
-                    style={{
-                        width: "100%",
-                        padding: "8px",
-                        borderRadius: "4px",
-                        border: "1px solid #26AEE7",
-                        marginBottom: "20px",
-                    }}
-                >
-                    <option value="">-- Select a deck --</option>
-                    {decks.map((d) => (
-                        <option key={d.id} value={d.id}>
-                            {d.name}
-                        </option>
-                    ))}
-                </select>
-
-                <div className="sort-buttons-container">
-                    <button
-                        onClick={() => sortBy("cost")}
-                        className="sort-button"
-                    >
-                        Sort by Cost
-                    </button>
-                    <button
-                        onClick={() => sortBy("attack")}
-                        className="sort-button"
-                    >
-                        Sort by Attack
-                    </button>
-                    <button
-                        onClick={() => sortBy("health")}
-                        className="sort-button"
-                    >
-                        Sort by Health
-                    </button>
-                </div>
-            </section>
-
-            <section className="grid">
-                {cards.map((card) => (
-                    <div
-                        key={card.id}
-                        style={{
-                            border: "1px solid #26AEE7",
-                            borderRadius: "8px",
-                            padding: "10px",
-                            backgroundColor: "#2C2A27",
-                            textAlign: "center",
-                        }}
-                    >
-                        <Link
-                            to={`/preview?card=${encodeURIComponent(
-                                card.name
-                            )}`}
-                        >
-                            <img
-                                src={`${API_URL}/${card.img}`}
-                                alt={card.name}
-                                style={{
-                                    display: "block",
-                                    maxWidth: "100%",
-                                    maxHeight: "200px",
-                                    objectFit: "contain",
-                                    margin: "auto",
-                                }}
-                            />
-                        </Link>
-                        <button
-                            onClick={() => handleAdd(card)}
-                            style={{
-                                marginTop: "10px",
-                                padding: "8px 16px",
-                                backgroundColor: "#26AEE7",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: "4px",
-                                cursor: "pointer",
-                            }}
-                        >
-                            Add
-                        </button>
-                    </div>
-                ))}
-            </section>
-        </main>
+  const sortBy = (metric) =>
+    setCards((cards) =>
+      [...cards].sort((a, b) => +b[metric] - +a[metric])
     );
+
+  const handleAdd = async (card) => {
+    if (!selectedDeckId) {
+      return alert("Select a deck first");
+    }
+    try {
+      const res = await fetch(
+        `${API_URL}/api/decks/${selectedDeckId}/cards`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(card),
+        }
+      );
+      const { success, message } = await res.json();
+      if (!success) throw new Error(message);
+      alert(`${card.name} added!`);
+    } catch (e) {
+      alert("Error: " + e.message);
+    }
+  };
+
+  return (
+    <main style={{ maxWidth: 800, margin: "auto", padding: 20 }}>
+      <h2>Browse Cards</h2>
+      <section
+        style={{
+          border: "1px solid #26AEE7",
+          borderRadius: 8,
+          padding: 20,
+          marginBottom: 30,
+          backgroundColor: "#2C2A27",
+        }}
+      >
+        <label style={{ color: "#FFD700" }}>Add cards to:</label>
+        <select
+          value={selectedDeckId}
+          onChange={(e) => setSelectedDeckId(e.target.value)}
+          style={{
+            width: "100%",
+            padding: 8,
+            marginBottom: 20,
+            borderRadius: 4,
+            border: "1px solid #26AEE7",
+          }}
+        >
+          <option value="">-- Select a deck --</option>
+          {decks.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.name}
+            </option>
+          ))}
+        </select>
+        <div className="sort-buttons-container" style={{ textAlign: "center" }}>
+          <button onClick={() => sortBy("cost")} className="sort-button">
+            Sort by Cost
+          </button>
+          <button onClick={() => sortBy("attack")} className="sort-button">
+            Sort by Attack
+          </button>
+          <button onClick={() => sortBy("health")} className="sort-button">
+            Sort by Health
+          </button>
+        </div>
+      </section>
+
+      <section className="grid">
+        {cards.map((c) => (
+          <div
+            key={c.id}
+            style={{
+              border: "1px solid #26AEE7",
+              borderRadius: 8,
+              padding: 10,
+              backgroundColor: "#2C2A27",
+            }}
+          >
+            <Link to={`/preview?card=${encodeURIComponent(c.name)}`}>
+              <img
+                src={`${API_URL}/${c.img}`}
+                alt={c.name}
+                style={{
+                  display: "block",
+                  margin: "auto",
+                  maxWidth: "100%",
+                  maxHeight: 200,
+                  objectFit: "contain",
+                }}
+              />
+            </Link>
+            <button
+              style={{
+                marginTop: 10,
+                padding: "8px 16px",
+                backgroundColor: "#26AEE7",
+                color: "#fff",
+                border: "none",
+                borderRadius: 4,
+                cursor: "pointer",
+              }}
+              onClick={() => handleAdd(c)}
+            >
+              Add
+            </button>
+          </div>
+        ))}
+      </section>
+    </main>
+  );
 };
 
 export default Browse;
