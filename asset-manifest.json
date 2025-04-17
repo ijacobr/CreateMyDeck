@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/CreateMyDeck/static/css/main.345ec32f.css",
-    "main.js": "/CreateMyDeck/static/js/main.bffb2588.js",
+    "main.js": "/CreateMyDeck/static/js/main.f8845b46.js",
     "index.html": "/CreateMyDeck/index.html",
     "main.345ec32f.css.map": "/CreateMyDeck/static/css/main.345ec32f.css.map",
-    "main.bffb2588.js.map": "/CreateMyDeck/static/js/main.bffb2588.js.map"
+    "main.f8845b46.js.map": "/CreateMyDeck/static/js/main.f8845b46.js.map"
   },
   "entrypoints": [
     "static/css/main.345ec32f.css",
-    "static/js/main.bffb2588.js"
+    "static/js/main.f8845b46.js"
   ]
 }
