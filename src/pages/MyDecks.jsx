@@ -1,134 +1,75 @@
-// src/pages/MyDecks.jsx
 import React, { useState, useEffect } from "react";
 
 const MyDecks = () => {
     const [decks, setDecks] = useState([]);
     const [deckName, setDeckName] = useState("");
     const [deckDescription, setDeckDescription] = useState("");
-    const [selectedFile, setSelectedFile] = useState(null);
-
-    const [editingId, setEditingId] = useState(null);
-    const [editName, setEditName] = useState("");
-    const [editDescription, setEditDescription] = useState("");
-    const [editFile, setEditFile] = useState(null);
-
     const [errorMsg, setErrorMsg] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
 
-    const API = process.env.REACT_APP_API_URL || "http://localhost:3001";
+    const API_URL =
+        process.env.REACT_APP_API_URL ||
+        "https://createmydeck-server.onrender.com";
 
-    // load decks
+    // load decks on mount
     useEffect(() => {
-        fetch(`${API}/api/decks`)
-            .then((r) => r.json())
+        fetch(`${API_URL}/api/decks`)
+            .then((res) => {
+                if (!res.ok) throw new Error("Failed to fetch decks");
+                return res.json();
+            })
             .then(setDecks)
-            .catch((e) => setErrorMsg("Load decks failed"));
-    }, [API]);
+            .catch((err) => setErrorMsg(err.message));
+    }, [API_URL]);
 
-    // create
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorMsg("");
         setSuccessMsg("");
-
         if (!deckName.trim() || !deckDescription.trim()) {
-            return setErrorMsg("Name & description required.");
+            setErrorMsg("Name and description are required.");
+            return;
         }
-
-        const form = new FormData();
-        form.append("name", deckName.trim());
-        form.append("description", deckDescription.trim());
-        if (selectedFile) form.append("image", selectedFile);
-
         try {
-            const res = await fetch(`${API}/api/decks`, {
+            const res = await fetch(`${API_URL}/api/decks`, {
                 method: "POST",
-                body: form,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: deckName.trim(),
+                    description: deckDescription.trim(),
+                }),
             });
-            const text = await res.text();
-            const data = JSON.parse(text);
-            if (!data.success) throw new Error(data.message);
-
-            setDecks((d) => [...d, data.deck]);
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || "Server error");
+            setDecks((prev) => [...prev, data.deck]);
             setDeckName("");
             setDeckDescription("");
-            setSelectedFile(null);
-            setSuccessMsg("Deck added!");
-        } catch (e) {
-            setErrorMsg(e.message);
+            setSuccessMsg("Deck created!");
+        } catch (err) {
+            setErrorMsg(err.message);
         }
     };
 
-    // delete
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this deck?")) return;
         setErrorMsg("");
-        setSuccessMsg("");
-
         try {
-            const res = await fetch(`${API}/api/decks/${id}`, {
+            const res = await fetch(`${API_URL}/api/decks/${id}`, {
                 method: "DELETE",
             });
-            const text = await res.text();
-            const data = JSON.parse(text);
-            if (!data.success) throw new Error(data.message);
-
-            setDecks((d) => d.filter((x) => x.id !== id));
-            setSuccessMsg("Deck deleted!");
-        } catch (e) {
-            setErrorMsg(e.message);
-        }
-    };
-
-    // begin edit
-    const startEdit = (d) => {
-        setEditingId(d.id);
-        setEditName(d.name);
-        setEditDescription(d.description);
-        setEditFile(null);
-        setErrorMsg("");
-        setSuccessMsg("");
-    };
-
-    // submit edit
-    const handleEditSubmit = async (e) => {
-        e.preventDefault();
-        setErrorMsg("");
-        setSuccessMsg("");
-
-        if (!editName.trim() || !editDescription.trim()) {
-            return setErrorMsg("Name & description required.");
-        }
-
-        const form = new FormData();
-        form.append("name", editName.trim());
-        form.append("description", editDescription.trim());
-        if (editFile) form.append("image", editFile);
-
-        try {
-            const res = await fetch(`${API}/api/decks/${editingId}`, {
-                method: "PUT",
-                body: form,
-            });
-            const text = await res.text();
-            const data = JSON.parse(text);
-            if (!data.success) throw new Error(data.message);
-
-            setDecks((d) => d.map((x) => (x.id === editingId ? data.deck : x)));
-            setEditingId(null);
-            setSuccessMsg("Deck updated!");
-        } catch (e) {
-            setErrorMsg(e.message);
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || "Delete failed");
+            setDecks((prev) => prev.filter((d) => d.id !== id));
+            setSuccessMsg("Deck deleted.");
+        } catch (err) {
+            setErrorMsg(err.message);
         }
     };
 
     return (
         <main style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
             <h2>My Decks</h2>
-            {errorMsg && <p style={{ color: "#f55" }}>{errorMsg}</p>}
-            {successMsg && <p style={{ color: "#5f5" }}>{successMsg}</p>}
 
-            {/* Create form */}
             <section
                 style={{
                     border: "1px solid #26AEE7",
@@ -142,57 +83,66 @@ const MyDecks = () => {
                     onSubmit={handleSubmit}
                     style={{ display: "flex", flexDirection: "column" }}
                 >
-                    <label style={{ color: "#FFD700" }}>Deck Name</label>
+                    <label style={{ color: "#FFD700", marginBottom: 5 }}>
+                        Deck Name
+                    </label>
                     <input
                         value={deckName}
                         onChange={(e) => setDeckName(e.target.value)}
-                        style={{
-                            marginBottom: 10,
-                            padding: 8,
-                            border: "1px solid #26AEE7",
-                            borderRadius: 4,
-                        }}
                         required
+                        style={{
+                            padding: 8,
+                            borderRadius: 4,
+                            border: "1px solid #26AEE7",
+                            marginBottom: 15,
+                        }}
                     />
-                    <label style={{ color: "#FFD700" }}>Description</label>
+
+                    <label style={{ color: "#FFD700", marginBottom: 5 }}>
+                        Description
+                    </label>
                     <textarea
                         value={deckDescription}
                         onChange={(e) => setDeckDescription(e.target.value)}
                         rows="3"
-                        style={{
-                            marginBottom: 10,
-                            padding: 8,
-                            border: "1px solid #26AEE7",
-                            borderRadius: 4,
-                        }}
                         required
+                        style={{
+                            padding: 8,
+                            borderRadius: 4,
+                            border: "1px solid #26AEE7",
+                            marginBottom: 15,
+                        }}
                     />
-                    <label style={{ color: "#FFD700" }}>Image (optional)</label>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setSelectedFile(e.target.files[0])}
-                        style={{ marginBottom: 10 }}
-                    />
+
                     <button
                         type="submit"
                         style={{
-                            alignSelf: "flex-start",
-                            padding: "8px 16px",
+                            padding: "10px 20px",
                             backgroundColor: "#26AEE7",
                             color: "#fff",
                             border: "none",
                             borderRadius: 4,
                             cursor: "pointer",
+                            alignSelf: "flex-start",
                         }}
                     >
                         Add Deck
                     </button>
                 </form>
+                {errorMsg && (
+                    <p style={{ color: "#ff6b6b", marginTop: 10 }}>
+                        {errorMsg}
+                    </p>
+                )}
+                {successMsg && (
+                    <p style={{ color: "#4caf50", marginTop: 10 }}>
+                        {successMsg}
+                    </p>
+                )}
             </section>
 
-            {/* Deck list */}
             <section>
+                <h3>Your Decks</h3>
                 {decks.length === 0 ? (
                     <p>No decks yet.</p>
                 ) : (
@@ -209,154 +159,42 @@ const MyDecks = () => {
                                     position: "relative",
                                 }}
                             >
-                                {editingId === d.id ? (
-                                    // Editing form
-                                    <form
-                                        onSubmit={handleEditSubmit}
+                                {d.image && (
+                                    <img
+                                        src={`${API_URL}${d.image}`}
+                                        alt={d.name}
                                         style={{
-                                            display: "flex",
-                                            flexDirection: "column",
+                                            display: "block",
+                                            maxWidth: "100%",
+                                            maxHeight: 150,
+                                            objectFit: "contain",
+                                            margin: "0 auto 10px",
                                         }}
-                                    >
-                                        <input
-                                            value={editName}
-                                            onChange={(e) =>
-                                                setEditName(e.target.value)
-                                            }
-                                            style={{
-                                                marginBottom: 8,
-                                                padding: 6,
-                                                border: "1px solid #26AEE7",
-                                                borderRadius: 4,
-                                            }}
-                                            required
-                                        />
-                                        <textarea
-                                            value={editDescription}
-                                            onChange={(e) =>
-                                                setEditDescription(
-                                                    e.target.value
-                                                )
-                                            }
-                                            rows="2"
-                                            style={{
-                                                marginBottom: 8,
-                                                padding: 6,
-                                                border: "1px solid #26AEE7",
-                                                borderRadius: 4,
-                                            }}
-                                            required
-                                        />
-                                        <label
-                                            style={{
-                                                fontSize: "0.9rem",
-                                                color: "#FFD700",
-                                            }}
-                                        >
-                                            Change Image?
-                                        </label>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) =>
-                                                setEditFile(e.target.files[0])
-                                            }
-                                            style={{ marginBottom: 8 }}
-                                        />
-                                        <div>
-                                            <button
-                                                type="submit"
-                                                style={{
-                                                    marginRight: 8,
-                                                    padding: "6px 12px",
-                                                    backgroundColor: "#26AEE7",
-                                                    color: "#fff",
-                                                    border: "none",
-                                                    borderRadius: 4,
-                                                    cursor: "pointer",
-                                                }}
-                                            >
-                                                Save
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setEditingId(null)
-                                                }
-                                                style={{
-                                                    padding: "6px 12px",
-                                                    backgroundColor: "#555",
-                                                    color: "#fff",
-                                                    border: "none",
-                                                    borderRadius: 4,
-                                                    cursor: "pointer",
-                                                }}
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </form>
-                                ) : (
-                                    // Static display
-                                    <>
-                                        {d.image && (
-                                            <img
-                                                src={`${API}${d.image}`}
-                                                alt={d.name}
-                                                style={{
-                                                    display: "block",
-                                                    maxWidth: "100%",
-                                                    maxHeight: 120,
-                                                    objectFit: "contain",
-                                                    margin: "0 auto 10px",
-                                                }}
-                                            />
-                                        )}
-                                        <strong
-                                            style={{
-                                                color: "#FFD700",
-                                                fontSize: 18,
-                                            }}
-                                        >
-                                            {d.name}
-                                        </strong>
-                                        <p style={{ margin: "8px 0" }}>
-                                            {d.description}
-                                        </p>
-                                        <button
-                                            onClick={() => startEdit(d)}
-                                            style={{
-                                                position: "absolute",
-                                                top: 15,
-                                                right: 45,
-                                                background: "transparent",
-                                                border: "none",
-                                                color: "#26AEE7",
-                                                fontSize: 18,
-                                                cursor: "pointer",
-                                            }}
-                                            title="Edit deck"
-                                        >
-                                            ✎
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(d.id)}
-                                            style={{
-                                                position: "absolute",
-                                                top: 15,
-                                                right: 15,
-                                                background: "transparent",
-                                                border: "none",
-                                                color: "#f55",
-                                                fontSize: 18,
-                                                cursor: "pointer",
-                                            }}
-                                            title="Delete deck"
-                                        >
-                                            ×
-                                        </button>
-                                    </>
+                                    />
                                 )}
+                                <strong
+                                    style={{ color: "#FFD700", fontSize: 18 }}
+                                >
+                                    {d.name}
+                                </strong>
+                                <p style={{ margin: "8px 0" }}>
+                                    {d.description}
+                                </p>
+                                <button
+                                    onClick={() => handleDelete(d.id)}
+                                    style={{
+                                        position: "absolute",
+                                        top: 15,
+                                        right: 15,
+                                        background: "transparent",
+                                        border: "none",
+                                        color: "#ff6b6b",
+                                        fontSize: 18,
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    ×
+                                </button>
                             </li>
                         ))}
                     </ul>
