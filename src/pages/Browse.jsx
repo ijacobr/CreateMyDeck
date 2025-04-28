@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
+const API_URL =
+    process.env.REACT_APP_API_URL || "https://createmydeck-server.onrender.com";
+
 const Browse = () => {
     const [cards, setCards] = useState([]);
     const [decks, setDecks] = useState([]);
     const [selectedDeckId, setSelectedDeckId] = useState("");
 
-    const API_URL =
-        process.env.REACT_APP_API_URL ||
-        "https://createmydeck-server.onrender.com";
-
+    // fetch all cards from your Render server
     useEffect(() => {
         fetch(`${API_URL}/api/cards`)
             .then((res) => {
@@ -17,9 +17,10 @@ const Browse = () => {
                 return res.json();
             })
             .then(setCards)
-            .catch((err) => console.error("Error fetching cards:", err));
-    }, [API_URL]);
+            .catch((err) => console.error(err));
+    }, []);
 
+    // fetch all decks
     useEffect(() => {
         fetch(`${API_URL}/api/decks`)
             .then((res) => {
@@ -27,16 +28,15 @@ const Browse = () => {
                 return res.json();
             })
             .then(setDecks)
-            .catch((err) => console.error("Error fetching decks:", err));
-    }, [API_URL]);
+            .catch((err) => console.error(err));
+    }, []);
 
     const sortBy = (metric) =>
         setCards((cards) => [...cards].sort((a, b) => +b[metric] - +a[metric]));
 
     const handleAdd = async (card) => {
         if (!selectedDeckId) {
-            alert("Please select a deck first.");
-            return;
+            return alert("Select a deck first");
         }
         try {
             const res = await fetch(
@@ -47,11 +47,11 @@ const Browse = () => {
                     body: JSON.stringify(card),
                 }
             );
-            const data = await res.json();
-            if (!data.success) throw new Error(data.message || "Server error");
-            alert(`${card.name} added to deck!`);
-        } catch (err) {
-            alert("Error adding card: " + err.message);
+            const { success, message } = await res.json();
+            if (!success) throw new Error(message);
+            alert(`${card.name} added!`);
+        } catch (e) {
+            alert("Error: " + e.message);
         }
     };
 
@@ -69,7 +69,6 @@ const Browse = () => {
                 }}
             >
                 <label
-                    htmlFor="deckSelect"
                     style={{
                         color: "#FFD700",
                         display: "block",
@@ -79,15 +78,14 @@ const Browse = () => {
                     Add cards to:
                 </label>
                 <select
-                    id="deckSelect"
                     value={selectedDeckId}
                     onChange={(e) => setSelectedDeckId(e.target.value)}
                     style={{
                         width: "100%",
                         padding: 8,
+                        marginBottom: 20,
                         borderRadius: 4,
                         border: "1px solid #26AEE7",
-                        marginBottom: 20,
                     }}
                 >
                     <option value="">-- Select a deck --</option>
@@ -98,7 +96,10 @@ const Browse = () => {
                     ))}
                 </select>
 
-                <div style={{ textAlign: "center", marginBottom: 20 }}>
+                <div
+                    className="sort-buttons-container"
+                    style={{ textAlign: "center" }}
+                >
                     <button
                         onClick={() => sortBy("cost")}
                         className="sort-button"
@@ -129,7 +130,6 @@ const Browse = () => {
                             borderRadius: 8,
                             padding: 10,
                             backgroundColor: "#2C2A27",
-                            textAlign: "center",
                         }}
                     >
                         <Link
@@ -147,8 +147,8 @@ const Browse = () => {
                                 }}
                             />
                         </Link>
+
                         <button
-                            onClick={() => handleAdd(c)}
                             style={{
                                 marginTop: 10,
                                 padding: "8px 16px",
@@ -158,6 +158,7 @@ const Browse = () => {
                                 borderRadius: 4,
                                 cursor: "pointer",
                             }}
+                            onClick={() => handleAdd(c)}
                         >
                             Add
                         </button>

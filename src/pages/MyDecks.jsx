@@ -1,39 +1,43 @@
 import React, { useState, useEffect } from "react";
 
+const API_URL =
+    process.env.REACT_APP_API_URL || "https://createmydeck-server.onrender.com";
+
 const MyDecks = () => {
     const [decks, setDecks] = useState([]);
     const [deckName, setDeckName] = useState("");
     const [deckDescription, setDeckDescription] = useState("");
+    const [selectedFile, setSelectedFile] = useState(null);
     const [errorMsg, setErrorMsg] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
 
-    const API_URL =
-        process.env.REACT_APP_API_URL ||
-        "https://createmydeck-server.onrender.com";
-
+    // Fetch existing decks
     useEffect(() => {
         fetch(`${API_URL}/api/decks`)
             .then((res) => {
-                if (!res.ok) throw new Error("Failed to fetch decks");
+                if (!res.ok) throw new Error("Failed to load decks");
                 return res.json();
             })
             .then(setDecks)
             .catch((err) => setErrorMsg(err.message));
-    }, [API_URL]);
+    }, []);
 
+    // Create a new deck
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorMsg("");
         setSuccessMsg("");
+
         if (!deckName.trim() || !deckDescription.trim()) {
-            setErrorMsg("Name and description are required.");
-            return;
+            return setErrorMsg("Name and description are required.");
         }
+
         const formData = new FormData();
         formData.append("name", deckName.trim());
         formData.append("description", deckDescription.trim());
-        // if you support image uploads:
-        // if (selectedFile) formData.append("image", selectedFile);
+        if (selectedFile) {
+            formData.append("image", selectedFile);
+        }
 
         try {
             const res = await fetch(`${API_URL}/api/decks`, {
@@ -45,12 +49,14 @@ const MyDecks = () => {
             setDecks((prev) => [...prev, data.deck]);
             setDeckName("");
             setDeckDescription("");
+            setSelectedFile(null);
             setSuccessMsg("Deck created!");
         } catch (err) {
             setErrorMsg(err.message);
         }
     };
 
+    // Delete a deck
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this deck?")) return;
         setErrorMsg("");
@@ -61,7 +67,6 @@ const MyDecks = () => {
             const data = await res.json();
             if (!data.success) throw new Error(data.message || "Delete failed");
             setDecks((prev) => prev.filter((d) => d.id !== id));
-            setSuccessMsg("Deck deleted.");
         } catch (err) {
             setErrorMsg(err.message);
         }
@@ -71,6 +76,7 @@ const MyDecks = () => {
         <main style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
             <h2>My Decks</h2>
 
+            {/* form for creating */}
             <section
                 style={{
                     border: "1px solid #26AEE7",
@@ -115,6 +121,18 @@ const MyDecks = () => {
                         }}
                     />
 
+                    <label style={{ color: "#FFD700", marginBottom: 5 }}>
+                        Image (optional)
+                    </label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) =>
+                            setSelectedFile(e.target.files[0] || null)
+                        }
+                        style={{ marginBottom: 15 }}
+                    />
+
                     <button
                         type="submit"
                         style={{
@@ -130,6 +148,7 @@ const MyDecks = () => {
                         Add Deck
                     </button>
                 </form>
+
                 {errorMsg && (
                     <p style={{ color: "#ff6b6b", marginTop: 10 }}>
                         {errorMsg}
@@ -142,6 +161,7 @@ const MyDecks = () => {
                 )}
             </section>
 
+            {/* list of decks */}
             <section>
                 <h3>Your Decks</h3>
                 {decks.length === 0 ? (
