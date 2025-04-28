@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-const API_URL =
-    process.env.REACT_APP_API_URL || "https://createmydeck-server.onrender.com";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
 const Browse = () => {
     const [cards, setCards] = useState([]);
     const [decks, setDecks] = useState([]);
     const [selectedDeckId, setSelectedDeckId] = useState("");
 
-    // fetch all cards from your Render server
+    // fetch all cards
     useEffect(() => {
         fetch(`${API_URL}/api/cards`)
             .then((res) => {
@@ -36,7 +35,8 @@ const Browse = () => {
 
     const handleAdd = async (card) => {
         if (!selectedDeckId) {
-            return alert("Select a deck first");
+            alert("Select a deck first");
+            return;
         }
         try {
             const res = await fetch(
@@ -47,11 +47,11 @@ const Browse = () => {
                     body: JSON.stringify(card),
                 }
             );
-            const { success, message } = await res.json();
-            if (!success) throw new Error(message);
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || "Server error");
             alert(`${card.name} added!`);
-        } catch (e) {
-            alert("Error: " + e.message);
+        } catch (err) {
+            alert("Error: " + err.message);
         }
     };
 
@@ -96,25 +96,25 @@ const Browse = () => {
                     ))}
                 </select>
 
-                <div
-                    className="sort-buttons-container"
-                    style={{ textAlign: "center" }}
-                >
+                <div style={{ textAlign: "center", marginBottom: 20 }}>
                     <button
                         onClick={() => sortBy("cost")}
                         className="sort-button"
+                        style={{ margin: "0 5px" }}
                     >
                         Sort by Cost
                     </button>
                     <button
                         onClick={() => sortBy("attack")}
                         className="sort-button"
+                        style={{ margin: "0 5px" }}
                     >
                         Sort by Attack
                     </button>
                     <button
                         onClick={() => sortBy("health")}
                         className="sort-button"
+                        style={{ margin: "0 5px" }}
                     >
                         Sort by Health
                     </button>
@@ -130,6 +130,7 @@ const Browse = () => {
                             borderRadius: 8,
                             padding: 10,
                             backgroundColor: "#2C2A27",
+                            textAlign: "center",
                         }}
                     >
                         <Link
@@ -147,8 +148,8 @@ const Browse = () => {
                                 }}
                             />
                         </Link>
-
                         <button
+                            onClick={() => handleAdd(c)}
                             style={{
                                 marginTop: 10,
                                 padding: "8px 16px",
@@ -158,7 +159,6 @@ const Browse = () => {
                                 borderRadius: 4,
                                 cursor: "pointer",
                             }}
-                            onClick={() => handleAdd(c)}
                         >
                             Add
                         </button>

@@ -1,6 +1,6 @@
-// src/pages/Analysis.jsx
-
 import React, { useEffect, useState } from "react";
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
 const DeckAnalysis = () => {
     const [decks, setDecks] = useState([]);
@@ -8,12 +8,7 @@ const DeckAnalysis = () => {
     const [analysis, setAnalysis] = useState(null);
     const [error, setError] = useState("");
 
-    // ← live server fallback
-    const API_URL =
-        process.env.REACT_APP_API_URL ||
-        "https://createmydeck-server.onrender.com";
-
-    // 1) fetch decks on mount
+    // fetch decks
     useEffect(() => {
         setError("");
         fetch(`${API_URL}/api/decks`)
@@ -23,7 +18,7 @@ const DeckAnalysis = () => {
             })
             .then((data) => setDecks(data))
             .catch(() => setError("Could not load decks."));
-    }, [API_URL]);
+    }, []);
 
     const analyze = () => {
         setError("");
@@ -41,25 +36,22 @@ const DeckAnalysis = () => {
 
         const cards = deck.cards || [];
         if (cards.length === 0) {
-            window.alert("This deck has no cards!");
             setAnalysis({ message: "Deck empty—add some cards!", points: [] });
             return;
         }
 
-        // compute averages
         let totalCost = 0,
             totalAtk = 0,
             totalHp = 0;
         cards.forEach((c) => {
-            totalCost += Number(c.cost);
-            totalAtk += Number(c.attack);
-            totalHp += Number(c.health);
+            totalCost += +c.cost;
+            totalAtk += +c.attack;
+            totalHp += +c.health;
         });
         const avgCost = totalCost / cards.length;
         const avgAtk = totalAtk / cards.length;
         const avgHp = totalHp / cards.length;
 
-        // build insights
         const points = [];
         if (avgCost < 4) points.push("⚡ Very low curve—fast starts!");
         else if (avgCost < 7) points.push("⚖️ Mid curve—well-balanced.");
@@ -80,15 +72,6 @@ const DeckAnalysis = () => {
         if (avgCost > 7 && avgAtk < 5)
             points.push("🎯 Control style—value cards over damage.");
 
-        // pop up the “dialog”
-        window.alert(
-            `Analysis for “${deck.name}”:\n` +
-                `• Avg Cost: ${avgCost.toFixed(1)}\n` +
-                `• Avg Atk: ${avgAtk.toFixed(1)}\n` +
-                `• Avg HP: ${avgHp.toFixed(1)}\n\n` +
-                `Insights:\n- ${points.join("\n- ")}`
-        );
-
         setAnalysis({
             avgCost: avgCost.toFixed(1),
             avgAttack: avgAtk.toFixed(1),
@@ -101,6 +84,7 @@ const DeckAnalysis = () => {
     return (
         <main style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
             <h2>Deck Analysis</h2>
+
             <section
                 style={{
                     border: "1px solid #26AEE7",
@@ -208,8 +192,22 @@ const DeckAnalysis = () => {
                                         marginBottom: 10,
                                     }}
                                 />
-                                <h4 style={{ margin: "10px 0" }}>{m.value}</h4>
-                                <p style={{ fontSize: "0.85rem" }}>{m.label}</p>
+                                <h4
+                                    style={{
+                                        margin: "10px 0",
+                                        color: "#FFD700",
+                                    }}
+                                >
+                                    {m.value}
+                                </h4>
+                                <p
+                                    style={{
+                                        fontSize: "0.85rem",
+                                        color: "#fff",
+                                    }}
+                                >
+                                    {m.label}
+                                </p>
                             </div>
                         ))}
                     </section>

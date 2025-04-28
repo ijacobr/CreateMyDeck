@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_URL =
-    process.env.REACT_APP_API_URL || "https://createmydeck-server.onrender.com";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
 const MyDecks = () => {
     const [decks, setDecks] = useState([]);
@@ -11,25 +10,29 @@ const MyDecks = () => {
     const [errorMsg, setErrorMsg] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
 
-    // Fetch existing decks
+    // load decks
     useEffect(() => {
         fetch(`${API_URL}/api/decks`)
             .then((res) => {
-                if (!res.ok) throw new Error("Failed to load decks");
+                if (!res.ok) throw new Error(`Load error: ${res.status}`);
                 return res.json();
             })
             .then(setDecks)
             .catch((err) => setErrorMsg(err.message));
     }, []);
 
-    // Create a new deck
+    const handleFileChange = (e) => {
+        setSelectedFile(e.target.files[0] || null);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorMsg("");
         setSuccessMsg("");
 
         if (!deckName.trim() || !deckDescription.trim()) {
-            return setErrorMsg("Name and description are required.");
+            setErrorMsg("Name and description are required.");
+            return;
         }
 
         const formData = new FormData();
@@ -44,7 +47,13 @@ const MyDecks = () => {
                 method: "POST",
                 body: formData,
             });
-            const data = await res.json();
+            const text = await res.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch {
+                throw new Error(`Server returned HTML: ${text}`);
+            }
             if (!data.success) throw new Error(data.message || "Server error");
             setDecks((prev) => [...prev, data.deck]);
             setDeckName("");
@@ -56,7 +65,6 @@ const MyDecks = () => {
         }
     };
 
-    // Delete a deck
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this deck?")) return;
         setErrorMsg("");
@@ -64,7 +72,13 @@ const MyDecks = () => {
             const res = await fetch(`${API_URL}/api/decks/${id}`, {
                 method: "DELETE",
             });
-            const data = await res.json();
+            const text = await res.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch {
+                throw new Error(`Server returned HTML: ${text}`);
+            }
             if (!data.success) throw new Error(data.message || "Delete failed");
             setDecks((prev) => prev.filter((d) => d.id !== id));
         } catch (err) {
@@ -76,7 +90,6 @@ const MyDecks = () => {
         <main style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
             <h2>My Decks</h2>
 
-            {/* form for creating */}
             <section
                 style={{
                     border: "1px solid #26AEE7",
@@ -127,9 +140,7 @@ const MyDecks = () => {
                     <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) =>
-                            setSelectedFile(e.target.files[0] || null)
-                        }
+                        onChange={handleFileChange}
                         style={{ marginBottom: 15 }}
                     />
 
@@ -161,7 +172,6 @@ const MyDecks = () => {
                 )}
             </section>
 
-            {/* list of decks */}
             <section>
                 <h3>Your Decks</h3>
                 {decks.length === 0 ? (

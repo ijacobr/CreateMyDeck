@@ -1,19 +1,14 @@
-// src/pages/CardPreview.jsx
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 // normalize helper
 const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "");
 
+const API_URL = process.env.REACT_APP_API_URL || "";
+
 const CardPreview = () => {
     const [card, setCard] = useState(null);
     const [error, setError] = useState("");
-
-    // ← live server fallback
-    const API_URL =
-        process.env.REACT_APP_API_URL ||
-        "https://createmydeck-server.onrender.com";
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -35,12 +30,12 @@ const CardPreview = () => {
                 else setError("Unknown card.");
             })
             .catch((err) => setError(err.message));
-    }, [API_URL]);
+    }, []);
 
     return (
-        <main>
+        <main style={{ maxWidth: 500, margin: "auto", padding: 20 }}>
             <h2>Card Preview</h2>
-            <div id="card-preview">
+            <div id="card-preview" style={{ textAlign: "center" }}>
                 <img
                     id="card-image"
                     src={
@@ -49,17 +44,21 @@ const CardPreview = () => {
                             : `${API_URL}/projects/images/cards/aldorpeacekeeper.png`
                     }
                     alt={card ? card.name : "Card Preview"}
-                    style={{ display: "block", margin: "auto" }}
+                    style={{
+                        maxWidth: "100%",
+                        height: "auto",
+                        marginBottom: 20,
+                    }}
                 />
                 <div id="card-details">
-                    <h3 id="card-name">
+                    <h3 id="card-name" style={{ color: "#FFD700" }}>
                         {card
                             ? card.name
                             : error
                             ? "Unknown Card"
                             : "No card selected"}
                     </h3>
-                    <p id="card-description">
+                    <p id="card-description" style={{ color: "#fff" }}>
                         {card
                             ? card.text
                             : error
@@ -68,7 +67,10 @@ const CardPreview = () => {
                     </p>
                 </div>
             </div>
-            <Link to="/Browse" className="back-link">
+            <Link
+                to="/Browse"
+                style={{ display: "block", marginTop: 20, color: "#26AEE7" }}
+            >
                 ← Back to Browse
             </Link>
         </main>
