@@ -11,7 +11,6 @@ const MyDecks = () => {
         process.env.REACT_APP_API_URL ||
         "https://createmydeck-server.onrender.com";
 
-    // load decks on mount
     useEffect(() => {
         fetch(`${API_URL}/api/decks`)
             .then((res) => {
@@ -30,14 +29,16 @@ const MyDecks = () => {
             setErrorMsg("Name and description are required.");
             return;
         }
+        const formData = new FormData();
+        formData.append("name", deckName.trim());
+        formData.append("description", deckDescription.trim());
+        // if you support image uploads:
+        // if (selectedFile) formData.append("image", selectedFile);
+
         try {
             const res = await fetch(`${API_URL}/api/decks`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: deckName.trim(),
-                    description: deckDescription.trim(),
-                }),
+                body: formData,
             });
             const data = await res.json();
             if (!data.success) throw new Error(data.message || "Server error");
